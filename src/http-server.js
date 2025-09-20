@@ -10,6 +10,10 @@ export function createHTTPServer(mcpServer) {
 
   const transports = {}
 
+  app.get("/", async (req, res) => {
+    res.status(200).send("MCP Server is running. You can connect to /mcp endpoint.");
+  });
+
   app.get("/ping", async (req, res) => {
     res.status(200).json({ status: "ok" });
   });

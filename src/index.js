@@ -1,5 +1,6 @@
-import app from "./app.js";
+import { createHTTPServer } from "./http-server.js";
+import { mcpServer } from "./mcp-server.js";
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log(`MCP Server is running on port ${process.env.PORT || 3000}`);
-});
+const app = createHTTPServer(mcpServer);
+
+export default app;
