@@ -2,7 +2,8 @@ import { randomUUID } from "node:crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import express from "express";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
-import * as data from "./data.js";
+import todosRoutes from "./todos-routes.js";
+import minimarketRoutes from "./minimarket-routes.js";
 
 export function createHTTPServer(mcpServer) {
   const app = express();
@@ -10,81 +11,18 @@ export function createHTTPServer(mcpServer) {
 
   const transports = {}
 
+  // Mount todos routes
+  app.use('/todos', todosRoutes);
+
+  // Mount minimarket routes
+  // app.use('/', minimarketRoutes);
+
   app.get("/", async (req, res) => {
     res.status(200).send("MCP Server is running. You can connect to /mcp endpoint.");
   });
 
   app.get("/ping", async (req, res) => {
     res.status(200).json({ status: "ok" });
-  });
-
-  app.get("/companies", async (req, res) => {
-    res.status(200).json(data.companies);
-  });
-
-  app.get("/companies/:id", async (req, res) => {
-    const company = data.companies.find(c => c.id === req.params.id);
-    if (company) {
-      res.status(200).json(company);
-    } else {
-      res.status(404).json({ error: "Company not found" });
-    }
-  });
-
-  app.get("/brands", async (req, res) => {
-    res.status(200).json(data.brands);
-  });
-
-  // brand by id
-  app.get("/brands/:id", async (req, res) => {
-    const brand = data.brands.find(b => b.id === req.params.id);
-    if (brand) {
-      res.status(200).json(brand);
-    } else {
-      res.status(404).json({ error: "Brand not found" });
-    }
-  });
-
-  app.get("/categories", async (req, res) => {
-    res.status(200).json(data.categories);
-  });
-
-  // category by id
-  app.get("/categories/:id", async (req, res) => {
-    const category = data.categories.find(c => c.id === req.params.id);
-    if (category) {
-      res.status(200).json(category);
-    } else {
-      res.status(404).json({ error: "Category not found" });
-    }
-  });
-
-  app.get("/products", async (req, res) => {
-    res.status(200).json(data.products);
-  });
-
-  // product by id
-  app.get("/products/:id", async (req, res) => {
-    const product = data.products.find(p => p.id === req.params.id);
-    if (product) {
-      res.status(200).json(product);
-    } else {
-      res.status(404).json({ error: "Product not found" });
-    }
-  });
-
-  app.get("/transactions", async (req, res) => {
-    res.status(200).json(data.transactions);
-  });
-
-  // transaction by id
-  app.get("/transactions/:id", async (req, res) => {
-    const transaction = data.transactions.find(t => t.id === req.params.id);
-    if (transaction) {
-      res.status(200).json(transaction);
-    } else {
-      res.status(404).json({ error: "Transaction not found" });
-    }
   });
 
   app.post("/mcp", async (req, res) => {

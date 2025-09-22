@@ -1,0 +1,189 @@
+### Variables
+@baseUrl = http://localhost:3000
+@userId = user123
+@todoId = 68d178ce64f6ba28ffcc6802
+
+### Health Check
+GET {{baseUrl}}/health
+
+###
+
+# ============================================
+# TODOS CRUD OPERATIONS
+# ============================================
+
+### 1. Create a new todo
+POST {{baseUrl}}/todos
+Content-Type: application/json
+
+{
+  "title": "Buy groceries",
+  "user_id": "{{userId}}",
+  "is_complete": false
+}
+
+###
+
+### 2. Create another todo
+POST {{baseUrl}}/todos
+Content-Type: application/json
+
+{
+  "title": "Finish project documentation",
+  "user_id": "{{userId}}",
+  "is_complete": false
+}
+
+###
+
+### 3. Create a completed todo
+POST {{baseUrl}}/todos
+Content-Type: application/json
+
+{
+  "title": "Morning workout",
+  "user_id": "{{userId}}",
+  "is_complete": true
+}
+
+###
+
+### 4. Get all todos for a user
+GET {{baseUrl}}/todos?user_id={{userId}}
+
+###
+
+### 5. Update a todo (replace {{todoId}} with actual ID from create response)
+PUT {{baseUrl}}/todos/{{todoId}}
+Content-Type: application/json
+
+{
+  "title": "Buy groceries and cook dinner",
+  "is_complete": false
+}
+
+###
+
+### 6. Mark todo as completed
+PUT {{baseUrl}}/todos/{{todoId}}/complete
+
+###
+
+### 7. Reopen a completed todo
+PUT {{baseUrl}}/todos/{{todoId}}/reopen
+
+###
+
+### 8. Delete a todo
+DELETE {{baseUrl}}/todos/{{todoId}}
+
+###
+
+# ============================================
+# ERROR CASES
+# ============================================
+
+### Create todo without required fields (should fail)
+POST {{baseUrl}}/todos
+Content-Type: application/json
+
+{
+  "title": "Missing user_id"
+}
+
+###
+
+### Create todo with empty title (should fail)
+POST {{baseUrl}}/todos
+Content-Type: application/json
+
+{
+  "title": "",
+  "user_id": "{{userId}}"
+}
+
+###
+
+### Get todos without user_id (should fail)
+GET {{baseUrl}}/todos
+
+###
+
+### Update non-existent todo (should fail)
+PUT {{baseUrl}}/todos/507f1f77bcf86cd799439999
+Content-Type: application/json
+
+{
+  "title": "This todo doesn't exist"
+}
+
+###
+
+### Complete non-existent todo (should fail)
+PUT {{baseUrl}}/todos/507f1f77bcf86cd799439999/complete
+
+###
+
+### Delete non-existent todo (should fail)
+DELETE {{baseUrl}}/todos/507f1f77bcf86cd799439999
+
+###
+
+# ============================================
+# DIFFERENT USERS
+# ============================================
+
+### Create todo for different user
+POST {{baseUrl}}/todos
+Content-Type: application/json
+
+{
+  "title": "Team meeting preparation",
+  "user_id": "user456",
+  "is_complete": false
+}
+
+###
+
+### Get todos for different user
+GET {{baseUrl}}/todos?user_id=user456
+
+###
+
+# ============================================
+# BULK OPERATIONS
+# ============================================
+
+### Create multiple todos for testing
+POST {{baseUrl}}/todos
+Content-Type: application/json
+
+{
+  "title": "Read emails",
+  "user_id": "{{userId}}",
+  "is_complete": false
+}
+
+###
+
+POST {{baseUrl}}/todos
+Content-Type: application/json
+
+{
+  "title": "Call client",
+  "user_id": "{{userId}}",
+  "is_complete": true
+}
+
+###
+
+POST {{baseUrl}}/todos
+Content-Type: application/json
+
+{
+  "title": "Update website",
+  "user_id": "{{userId}}",
+  "is_complete": false
+}
+
+###
