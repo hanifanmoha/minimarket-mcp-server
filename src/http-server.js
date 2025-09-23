@@ -22,9 +22,6 @@ export function createHTTPServer(mcpServer) {
     allowedHeaders: ['Content-Type', 'mcp-session-id'],
   }));
 
-
-  const transports = {}
-
   // Mount todos routes
   app.use('/todos', todosRoutes);
 
@@ -40,64 +37,46 @@ export function createHTTPServer(mcpServer) {
   });
 
   app.post("/mcp", async (req, res) => {
+    console.log("Creating new transport for request (stateless)");
 
-    const sessionId = req.headers['mcp-session-id']
-    let transport;
-
-    if (sessionId && transports[sessionId]) {
-      console.log(`Using existing transport for session ID: ${sessionId}`);
-      transport = transports[sessionId];
-    } else if (!sessionId && isInitializeRequest(req.body)) {
-      console.log("Creating new transport for new session (no session ID provided)");
-      transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: () => randomUUID(),
-        onsessioninitialized: (sessionId) => {
-          transports[sessionId] = transport;
-        }
+    try {
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined,
       });
-
-      transport.onclose = () => {
-        if (transport.sessionId) {
-          delete transports[transport.sessionId];
-        }
-      };
-
-      console.log(`New session initialized with ID: ${transport.sessionId}`);
+      res.on('close', () => {
+        console.log('Request closed');
+        transport.close();
+        mcpServer.close();
+      });
       await mcpServer.connect(transport);
-    } else {
-      console.log(`No valid session. Session ID provided: ${sessionId}, isInitializeRequest: ${isInitializeRequest(req.body)}`);
-      res.status(400).json({
-        jsonrpc: '2.0',
-        error: {
-          code: -32000,
-          message: 'Bad Request: No valid session ID provided',
-        },
-        id: null,
-      });
-
-      return
+      await transport.handleRequest(req, res, req.body);
+    } catch (error) {
+      console.error('Error handling MCP request:', error);
+      if (!res.headersSent) {
+        res.status(500).json({
+          jsonrpc: '2.0',
+          error: {
+            code: -32603,
+            message: 'Internal server error',
+          },
+          id: null,
+        });
+      }
     }
 
-    await transport.handleRequest(req, res, req.body);
 
-  })
+    // // Always create a fresh transport for each request
+    // const transport = new StreamableHTTPServerTransport({
+    //   sessionIdGenerator: () => randomUUID(),
+    //   onsessioninitialized: (sessionId) => {
+    //     console.log(`Session initialized: ${sessionId}`);
+    //   }
+    // });
 
-  const handleSessionRequest = async (req, res) => {
-    const sessionId = req.headers['mcp-session-id']
-    if (!sessionId || !transports[sessionId]) {
-      res.status(400).send('Invalid or missing session ID');
-      return;
-    }
+    // // Connect and handle request immediately
+    // await mcpServer.connect(transport);
+    // await transport.handleRequest(req, res, req.body);
+  });
 
-    const transport = transports[sessionId];
-    await transport.handleRequest(req, res);
-  };
-
-  // Handle GET requests for server-to-client notifications via SSE
-  app.get('/mcp', handleSessionRequest);
-
-  // Handle DELETE requests for session termination
-  app.delete('/mcp', handleSessionRequest);
-  
   return app
 }
