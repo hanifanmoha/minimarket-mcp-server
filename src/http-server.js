@@ -70,6 +70,8 @@ export function createHTTPServer(mcpServer) {
         }
       };
 
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Small delay to ensure async setup
+
       console.log(`New transport created with existing session ID: ${sessionId}`);
       await mcpServer.connect(transport);
     } else {
