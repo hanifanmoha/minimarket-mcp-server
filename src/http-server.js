@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import express from "express";
-import cors from "cors";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -14,14 +13,6 @@ const __dirname = dirname(__filename);
 export function createHTTPServer(mcpServer) {
   const app = express();
   app.use(express.json());
-
-  app.use(cors({
-    origin: '*', // Configure appropriately for production, for example:
-    // origin: ['https://your-remote-domain.com', 'https://your-other-remote-domain.com'],
-    exposedHeaders: ['Mcp-Session-Id'],
-    allowedHeaders: ['Content-Type', 'mcp-session-id'],
-  }));
-
 
   const transports = {}
 
@@ -63,6 +54,25 @@ export function createHTTPServer(mcpServer) {
       };
 
       console.log(`New session initialized with ID: ${transport.sessionId}`);
+      await mcpServer.connect(transport);
+    } else if (sessionId && !transports[sessionId]) {
+      console.log(`Session ID ${sessionId} not found in local map, creating new transport with that ID`);
+      transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: () => sessionId, // Use the provided session ID
+        onsessioninitialized: (initializedSessionId) => {
+          transports[initializedSessionId] = transport;
+        }
+      });
+
+      transport.onclose = () => {
+        if (transport.sessionId) {
+          delete transports[transport.sessionId];
+        }
+      };
+
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Small delay to ensure async setup
+
+      console.log(`New transport created with existing session ID: ${sessionId}`);
       await mcpServer.connect(transport);
     } else {
       console.log(`No valid session. Session ID provided: ${sessionId}, isInitializeRequest: ${isInitializeRequest(req.body)}`);
