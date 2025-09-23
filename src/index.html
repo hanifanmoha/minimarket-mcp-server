@@ -259,22 +259,35 @@
                     url: '/prompt',
                     method: 'POST',
                     contentType: 'application/json',
-                    data: JSON.stringify({ prompt: prompt }),
+                    data: JSON.stringify({ 
+                        prompt: prompt,
+                        user_id: $('#userId').val()
+                    }),
                     success: function(response) {
-                        console.log('GROQ Response:', response);
+                        console.log('LangChain Agent Response:', response);
                         
                         if (response.success && response.response) {
                             // Show response
                             $('#llmResponse').html(`
                                 <div class="prose prose-sm max-w-none">
-                                    <div class="text-xs text-gray-500 mb-3 flex items-center">
-                                        <span class="inline-block w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-                                        Response received
+                                    <div class="text-xs text-gray-500 mb-3 flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <span class="inline-block w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                                            AI Agent Response
+                                        </div>
+                                        <div class="text-xs text-gray-400">
+                                            ${response.tools_used} tools available
+                                        </div>
                                     </div>
                                     <div class="whitespace-pre-wrap text-gray-800">${response.response}</div>
                                 </div>
                             `).removeClass('hidden');
                             $('#clearResponse').removeClass('hidden');
+                            
+                            // Auto-refresh todos after AI response (in case todos were modified)
+                            setTimeout(() => {
+                                loadTodos();
+                            }, 1000);
                         } else {
                             $('#llmResponse').html(`
                                 <div class="text-center text-red-500 py-4">
