@@ -55,12 +55,11 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Create MCP client using stdio transport (internal, fast)
+    // Create MCP client pointing to our own server
     const mcpClient = new MultiServerMCPClient({
       todos: {
-        transport: 'stdio',
-        command: 'node',
-        args: [new URL('../src/mcp-stdio.js', import.meta.url).pathname]
+        transport: 'http', // Corrected from 'sse' to 'http'
+        url: `${baseUrl}/mcp`
       }
     });
 
