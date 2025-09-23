@@ -20,7 +20,10 @@ class TodosManager {
     }
 
     try {
-      const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/minimarket';
+      const uri = process.env.MONGODB_URI;
+      if (!uri) {
+        throw new Error('MONGODB_URI environment variable is not set');
+      }
       this.client = new MongoClient(uri);
       
       await this.client.connect();
