@@ -2,8 +2,12 @@ import { randomUUID } from "node:crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import express from "express";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import todosRoutes from "./todos-routes.js";
-import minimarketRoutes from "./minimarket-routes.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export function createHTTPServer(mcpServer) {
   const app = express();
@@ -14,11 +18,8 @@ export function createHTTPServer(mcpServer) {
   // Mount todos routes
   app.use('/todos', todosRoutes);
 
-  // Mount minimarket routes
-  // app.use('/', minimarketRoutes);
-
   app.get("/", async (req, res) => {
-    res.status(200).send("MCP Server is running. You can connect to /mcp endpoint.");
+    res.sendFile(join(__dirname, 'index.html'));
   });
 
   app.get("/ping", async (req, res) => {

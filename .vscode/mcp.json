@@ -1,10 +1,10 @@
 {
 	"servers": {
-		"my-mcp-server-55f047ea": {
-			"url": "https://minimarket-mcp-server.vercel.app/mcp",
+		"todos-mcp-server": {
+			"url": "https://todos-mcp-server.vercel.app/mcp",
 			"type": "http"
 		},
-		"local-todos-mcp": {
+		"todos-mcp-local": {
 			"url": "http://localhost:3000/mcp",
 			"type": "http"
 		}

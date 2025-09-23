@@ -111,6 +111,12 @@ class TodosManager {
       throw new Error('User ID is required');
     }
 
+    // Check maximum todo limit per user (3 todos)
+    const existingTodos = await this.collection.countDocuments({ user_id: todo.user_id });
+    if (existingTodos >= 3) {
+      throw new Error('Maximum of 3 todos per user allowed. Please complete or delete existing todos first.');
+    }
+
     try {
       const result = await this.collection.insertOne(todo);
       const createdTodo = await this.collection.findOne({ _id: result.insertedId });

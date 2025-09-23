@@ -64,7 +64,7 @@ export function registerTodosTools(mcpServer) {
   // Create a new todo
   mcpServer.registerTool("create_todo", {
     title: "Create Todo",
-    description: "Create a new todo item",
+    description: "Create a new todo item. Maximum of 3 todos per user allowed. If user already has 3 todos, they must DELETE existing todos first (completing todos does not free up space).",
     inputSchema: createTodoZodSchema
   }, async (args) => {
     try {
