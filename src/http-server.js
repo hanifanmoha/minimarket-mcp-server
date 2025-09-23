@@ -39,7 +39,7 @@ export function createHTTPServer(mcpServer) {
       console.log(`Using existing transport for session ID: ${sessionId}`);
       transport = transports[sessionId];
     } else if (!sessionId && isInitializeRequest(req.body)) {
-      console.log("Creating new transport for new session");
+      console.log("Creating new transport for new session (no session ID provided)");
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
         onsessioninitialized: (sessionId) => {
@@ -55,8 +55,25 @@ export function createHTTPServer(mcpServer) {
 
       console.log(`New session initialized with ID: ${transport.sessionId}`);
       await mcpServer.connect(transport);
+    } else if (sessionId && !transports[sessionId]) {
+      console.log(`Session ID ${sessionId} not found in local map, creating new transport with that ID`);
+      transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: () => sessionId, // Use the provided session ID
+        onsessioninitialized: (initializedSessionId) => {
+          transports[initializedSessionId] = transport;
+        }
+      });
+
+      transport.onclose = () => {
+        if (transport.sessionId) {
+          delete transports[transport.sessionId];
+        }
+      };
+
+      console.log(`New transport created with existing session ID: ${sessionId}`);
+      await mcpServer.connect(transport);
     } else {
-      console.log(`No valid session. Session ID provided: ${sessionId}`);
+      console.log(`No valid session. Session ID provided: ${sessionId}, isInitializeRequest: ${isInitializeRequest(req.body)}`);
       res.status(400).json({
         jsonrpc: '2.0',
         error: {
