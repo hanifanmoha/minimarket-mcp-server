@@ -5,6 +5,7 @@ import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import todosRoutes from "./todos-routes.js";
+import promptRoutes from "./prompt-routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -17,6 +18,9 @@ export function createHTTPServer(mcpServer) {
 
   // Mount todos routes
   app.use('/todos', todosRoutes);
+
+  // Mount prompt routes  
+  app.use('/prompt', promptRoutes);
 
   app.get("/", async (req, res) => {
     res.sendFile(join(__dirname, 'index.html'));
